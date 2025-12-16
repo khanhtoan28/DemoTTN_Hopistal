@@ -10,63 +10,45 @@ import { Filter, Download, X } from 'lucide-react'
 const certificates = [
   {
     id: 1,
-    name: 'Bằng khen của Bộ Y tế',
+    name: 'Tập thể lao động xuất sắc - Khoa Ngoại Nhi',
     level: 'Bộ Y tế',
-    year: 2020,
-    department: 'Toàn bệnh viện',
-    image: '/cert-1.jpg',
-    description: 'Thành tích xuất sắc trong công tác phòng chống dịch bệnh',
+    year: 2019,
+    department: 'Khoa Ngoại Nhi',
+    image: '/img/sovang1.png',
+    description: 'Đã có thành tích xuất sắc thực hiện nhiệm vụ, kế hoạch công tác Y tế năm 2018',
   },
   {
     id: 2,
-    name: 'Huân chương Lao động hạng Nhì',
-    level: 'Nhà nước',
-    year: 2015,
+    name: 'Bằng khen của Bộ Công An',
+    level: 'Bộ Công An',
+    year: 2019,
     department: 'Toàn bệnh viện',
-    image: '/cert-2.jpg',
-    description: 'Ghi nhận những đóng góp to lớn trong sự nghiệp y tế',
+    image: '/img/sovang2.png',
+    description: 'Đã có thành tích xuất sắc trong công tác phối hợp thực hiện nhiệm vụ bảo vệ an ninh quốc gia và bảo đảm trật tự, an toàn xã hội',
   },
   {
     id: 3,
-    name: 'Bằng khen của Tỉnh Thái Nguyên',
-    level: 'Tỉnh',
-    year: 2018,
-    department: 'Khoa Ngoại',
-    image: '/cert-3.jpg',
-    description: 'Thành tích xuất sắc trong công tác khám chữa bệnh',
+    name: 'Bằng khen Khoa Ngoại Nhi',
+    level: 'Bộ Y tế',
+    year: 2020,
+    department: 'Khoa Ngoại Nhi',
+    image: '/img/sovang3.png',
+    description: 'Đã có thành tích xuất sắc thực hiện nhiệm vụ, kế hoạch công tác Y tế năm 2018-2019',
   },
   {
     id: 4,
-    name: 'Giấy khen tập thể lao động xuất sắc',
-    level: 'Bộ Y tế',
-    year: 2022,
-    department: 'Khoa Nội',
-    image: '/cert-4.jpg',
-    description: 'Tập thể lao động xuất sắc năm 2022',
-  },
-  {
-    id: 5,
-    name: 'Bằng khen đơn vị dẫn đầu',
-    level: 'Bộ Y tế',
-    year: 2021,
+    name: 'Chứng nhận Liên đội mạnh xuất sắc',
+    level: 'Hội đồng Đội tỉnh',
+    year: 2024,
     department: 'Toàn bệnh viện',
-    image: '/cert-5.jpg',
-    description: 'Đơn vị dẫn đầu trong phong trào thi đua yêu nước',
-  },
-  {
-    id: 6,
-    name: 'Giấy khen khoa phòng xuất sắc',
-    level: 'Bệnh viện',
-    year: 2023,
-    department: 'Khoa Sản',
-    image: '/cert-6.jpg',
-    description: 'Khoa phòng đạt thành tích xuất sắc năm 2023',
+    image: '/img/sovang4.png',
+    description: 'Đạt danh hiệu Liên đội mạnh xuất sắc cấp tỉnh năm học 2023-2024',
   },
 ]
 
-const levels = ['Tất cả', 'Nhà nước', 'Bộ Y tế', 'Tỉnh', 'Bệnh viện']
-const years = ['Tất cả', 2023, 2022, 2021, 2020, 2019, 2018, 2015]
-const departments = ['Tất cả', 'Toàn bệnh viện', 'Khoa Nội', 'Khoa Ngoại', 'Khoa Sản']
+const levels = ['Tất cả', 'Nhà nước', 'Bộ Y tế', 'Bộ Công An', 'Hội đồng Đội tỉnh', 'Tỉnh', 'Bệnh viện']
+const years = ['Tất cả', 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2015]
+const departments = ['Tất cả', 'Toàn bệnh viện', 'Khoa Nội', 'Khoa Ngoại', 'Khoa Ngoại Nhi', 'Khoa Sản']
 
 export default function SoVangPage() {
   const [selectedLevel, setSelectedLevel] = useState('Tất cả')
@@ -193,8 +175,12 @@ export default function SoVangPage() {
 
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="aspect-[4/3] bg-gradient-to-br from-white to-primary-dark flex items-center justify-center rounded">
-                    <span className="text-6xl">🏆</span>
+                  <div className="aspect-[3/4] bg-white rounded-lg overflow-hidden shadow-lg">
+                    <img
+                      src={selectedCert.image}
+                      alt={selectedCert.name}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
 

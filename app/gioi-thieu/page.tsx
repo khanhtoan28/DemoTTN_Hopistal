@@ -51,7 +51,7 @@ export default function GioiThieuPage() {
                   lịch sử quý giá
                 </li>
                 <li>
-                  <strong>Timeline:</strong> Dòng lịch sử 75 năm phát triển với các cột mốc
+                  <strong>Lịch sử:</strong> Dòng lịch sử 75 năm phát triển với các cột mốc
                   quan trọng
                 </li>
                 <li>

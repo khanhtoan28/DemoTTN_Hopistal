@@ -8,7 +8,7 @@ Website trưng bày kỷ niệm 75 năm thành lập bệnh viện (1951-2026).
 - 🏆 **Sổ vàng**: Gallery bằng khen, giấy khen với bộ lọc và trang chi tiết
 - 📦 **Hiện vật**: Danh mục hiện vật với QR code và bộ lọc
 - 📱 **Chi tiết hiện vật**: Trang chi tiết với QR code để đặt tại phòng trưng bày
-- ⏰ **Timeline**: Dòng lịch sử 75 năm phát triển
+- ⏰ **Lịch sử**: Dòng lịch sử 75 năm phát triển
 - ℹ️ **Giới thiệu**: Thông tin về phòng truyền thống
 
 ## Công nghệ
@@ -45,7 +45,7 @@ Mở [http://localhost:3000](http://localhost:3000) để xem kết quả.
 │   ├── so-vang/              # Sổ vàng - Bằng khen
 │   ├── hien-vat/             # Danh mục hiện vật
 │   │   └── [id]/             # Chi tiết hiện vật
-│   ├── timeline/             # Timeline 75 năm
+│   ├── lich-su/              # Lịch sử 75 năm
 │   └── gioi-thieu/           # Giới thiệu
 ├── components/
 │   ├── Header.tsx            # Header với menu

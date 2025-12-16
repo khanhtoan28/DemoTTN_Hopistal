@@ -74,7 +74,7 @@ export default function Home() {
             </Link>
 
             {/* Dòng lịch sử */}
-            <Link href="/timeline" className="card group cursor-pointer">
+            <Link href="/lich-su" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#0B5ED7' }}>
                   <Clock className="w-10 h-10 text-white" />

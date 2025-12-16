@@ -10,7 +10,7 @@ export default function Header() {
   const menuItems = [
     { name: 'Sổ vàng', path: '/so-vang' },
     { name: 'Hiện vật', path: '/hien-vat' },
-    { name: 'Timeline', path: '/timeline' },
+    { name: 'Lịch sử', path: '/lich-su' },
     { name: 'Giới thiệu', path: '/gioi-thieu' },
   ]
 
