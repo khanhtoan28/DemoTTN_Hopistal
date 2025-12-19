@@ -11,7 +11,7 @@ export default function Home() {
       {/* Hero Banner */}
       <section className="relative h-[600px] md:h-[700px] overflow-hidden">
         {/* Background Image */}
-        <div className="absolute inset-0 bg-[url('/img/anh3.jpg')] bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-[url('/img/banner.jpg')] bg-cover bg-center"></div>
         {/* Overlay để text dễ đọc */}
         <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/100 via-primary-dark/50 to-primary-dark/10"></div>
         
