@@ -50,10 +50,10 @@ export default function SoVangPage() {
   const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null)
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8 flex-1">
+      <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
         <div className="mb-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-dark mb-4">
             Sổ vàng – Bằng khen
@@ -68,7 +68,7 @@ export default function SoVangPage() {
           certificates={certificates}
           onPageClick={(cert) => setSelectedCert(cert)}
         />
-      </div>
+      </main>
 
       {/* Modal chi tiết */}
       {selectedCert && (

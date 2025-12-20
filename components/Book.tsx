@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import HTMLFlipBook from 'react-pageflip'
 
 interface Certificate {
   id: number
@@ -19,148 +19,64 @@ interface BookProps {
 }
 
 export default function Book({ certificates, onPageClick }: BookProps) {
-  const [currentPage, setCurrentPage] = useState(0)
-  const [isFlipping, setIsFlipping] = useState(false)
-  const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null)
-  const [flipProgress, setFlipProgress] = useState(0)
+  const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const flipBookRef = useRef<any>(null)
 
-  // Tổng số trang: 1 trang bìa + certificates
-  const totalPages = certificates.length + 1
-
-  const handleNext = () => {
-    if (currentPage < totalPages - 1 && !isFlipping) {
-      setIsFlipping(true)
-      setFlipDirection('next')
-      setFlipProgress(0)
-      
-      // Animation lật trang
-      const duration = 800
-      const startTime = Date.now()
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        setFlipProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          setCurrentPage((prev) => prev + 1)
-          setIsFlipping(false)
-          setFlipDirection(null)
-          setFlipProgress(0)
-        }
-      }
-      requestAnimationFrame(animate)
-    }
-  }
-
-  const handlePrev = () => {
-    if (currentPage > 0 && !isFlipping) {
-      setIsFlipping(true)
-      setFlipDirection('prev')
-      setFlipProgress(0)
-      
-      // Animation lật trang
-      const duration = 800
-      const startTime = Date.now()
-      const animate = () => {
-        const elapsed = Date.now() - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        setFlipProgress(progress)
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate)
-        } else {
-          setCurrentPage((prev) => prev - 1)
-          setIsFlipping(false)
-          setFlipDirection(null)
-          setFlipProgress(0)
-        }
-      }
-      requestAnimationFrame(animate)
-    }
-  }
-
+  // Kiểm tra mobile
   useEffect(() => {
-    setCurrentPage(0)
-    setIsFlipping(false)
-  }, [certificates.length])
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (isFlipping) return
-      
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault()
-        handlePrev()
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault()
-        handleNext()
-      }
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
     }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [currentPage, totalPages, isFlipping])
-
-  if (certificates.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[600px]">
-        <p className="text-gray-600 text-lg">
-          Không tìm thấy bằng khen nào phù hợp với bộ lọc
-        </p>
-      </div>
-    )
-  }
+  // Tính toán số trang
+  // Trang 0 = bìa, Trang 1 = mặt sau bìa (cert[0]), 
+  // Trang 2 = cert[0] mặt trước, Trang 3 = cert[0] mặt sau (cert[1]), ...
+  const totalPages = 1 + certificates.length * 2 // 1 bìa + mỗi cert 2 trang
 
   // Render trang bìa
   const renderCoverPage = () => {
     return (
-      <>
-        <div className="page-front">
-          <div className="p-8 md:p-12 h-full flex flex-col items-center justify-center">
-            <div className="text-center mb-8">
-              <div className="inline-block border-b-4 border-primary-dark pb-4 mb-6">
-                <h1 className="text-4xl md:text-5xl font-bold text-primary-dark mb-2">
-                  SỔ VÀNG
-                </h1>
-                <h2 className="text-2xl md:text-3xl font-semibold text-primary-dark">
-                  BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
-                </h2>
-              </div>
-              <p className="text-lg text-gray-600 italic mt-4">
-                Kỷ niệm 75 năm thành lập
-              </p>
-              <p className="text-xl font-bold text-primary-dark mt-2">
-                1951 - 2026
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <div className="w-40 h-40 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
-                <span className="text-7xl">🏆</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <p className="text-gray-700 text-lg max-w-md">
-                Thành tựu và vinh dự qua 75 năm phát triển
-              </p>
-              <div className="w-32 h-1 bg-gradient-to-r from-transparent via-primary-dark to-transparent mt-6 mx-auto"></div>
-            </div>
+      <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-800 via-red-900 to-red-800">
+        <div className="text-center mb-4">
+          <div className="inline-block border-b-3 border-white pb-2 mb-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
+              SỔ VÀNG
+            </h1>
+            <h2 className="text-lg md:text-xl font-semibold text-white">
+              BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
+            </h2>
+          </div>
+          <p className="text-sm text-white text-opacity-90 italic mt-2">
+            Kỷ niệm 75 năm thành lập
+          </p>
+          <p className="text-base font-bold text-white mt-1">
+            1951 - 2026
+          </p>
+        </div>
+        <div className="mb-20">
+          <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
+            <span className="text-5xl">🏆</span>
           </div>
         </div>
-        <div className="page-back">
-          {certificates[0] && renderCertificatePage(certificates[0], 1)}
+        <div className="text-center">
+          <p className="text-white text-opacity-90 text-sm max-w-md">
+            Thành tựu và vinh dự qua 75 năm phát triển
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-white to-transparent mt-3 mx-auto"></div>
         </div>
-      </>
+      </div>
     )
   }
 
   // Render trang certificate
   const renderCertificatePage = (cert: Certificate, pageNum: number) => {
     return (
-      <div className="p-4 md:p-5 h-full flex flex-col overflow-visible">
+      <div className="p-4 md:p-5 h-full flex flex-col overflow-visible bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-50">
         <div className="text-center mb-2 flex-shrink-0">
           <div className="inline-block border-b-2 border-primary-dark pb-1.5 mb-1.5">
             <h2 className="text-lg md:text-xl font-bold text-primary-dark">
@@ -174,13 +90,28 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
         <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-visible py-1">
           <div className="mb-2.5 w-full flex-shrink-0 flex justify-center">
-            <div className="certificate-frame" style={{ width: '280px', height: '220px' }}>
-              <div className="certificate-frame-inner" style={{ width: '100%', height: '100%' }}>
-                <img
-                  src={cert.image}
-                  alt={cert.name}
-                  className="w-full h-full object-contain block"
-                />
+            <div 
+              className="certificate-image-wrapper"
+              style={{ width: '280px', height: '220px' }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setZoomImage(cert.image);
+              }}
+            >
+              <div className="certificate-frame" style={{ width: '100%', height: '100%' }}>
+                <div className="certificate-frame-inner" style={{ width: '100%', height: '100%' }}>
+                  <img
+                    src={cert.image}
+                    alt={cert.name}
+                    className="certificate-image"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -220,281 +151,83 @@ export default function Book({ certificates, onPageClick }: BookProps) {
     )
   }
 
-  // Xác định trang bên trái và bên phải
-  // Luôn hiển thị 2 trang như một cuốn sách thật
-  const getLeftPage = () => {
-    if (currentPage === 0) {
-      // Trang đầu: trái trống hoặc trang bìa trong
-      return { type: 'empty', index: -1 }
-    }
-    if (currentPage === 1) {
-      // Trang 2: trái = mặt sau của bìa (certificate đầu tiên)
-      return { type: 'cover-back', index: 0 }
-    }
-    // Các trang sau: trái = certificate trước đó
-    return { type: 'cert', index: currentPage - 2 }
-  }
-
-  const getRightPage = () => {
-    if (currentPage === 0) {
-      // Trang đầu: phải = bìa
-      return { type: 'cover', index: 0 }
-    }
-    // Các trang sau: phải = certificate hiện tại
-    return { type: 'cert', index: currentPage - 1 }
-  }
-
-  const leftPage = getLeftPage()
-  const rightPage = getRightPage()
-
-  // Tính toán nội dung trang đang lật
-  const getFlippingPageContent = () => {
-    if (!isFlipping || !flipDirection) return { front: null, back: null }
-    
-    if (flipDirection === 'next') {
-      // Đang lật sang trang tiếp theo - mặt trước là trang bên phải hiện tại (rightPage)
-      const frontContent = rightPage.type === 'cover'
-        ? { type: 'cover' as const, index: 0 }
-        : rightPage.type === 'cert' && rightPage.index >= 0 && rightPage.index < certificates.length
-        ? { type: 'cert' as const, index: rightPage.index }
-        : null
-      
-      // Mặt sau là trang tiếp theo (sau khi lật, trang này sẽ là trang bên phải mới)
-      const nextPageIndex = currentPage + 1
-      const backContent = nextPageIndex === 1
-        ? { type: 'cert' as const, index: 0 } // Trang tiếp theo là cert[0] (trang 2)
-        : nextPageIndex <= certificates.length
-        ? { type: 'cert' as const, index: nextPageIndex - 1 } // Trang tiếp theo
-        : null
-        
-      return { front: frontContent, back: backContent }
-    } else {
-      // Đang lật về trang trước - mặt trước là trang bên phải hiện tại (rightPage)
-      const frontContent = rightPage.type === 'cover'
-        ? { type: 'cover' as const, index: 0 }
-        : rightPage.type === 'cert' && rightPage.index >= 0 && rightPage.index < certificates.length
-        ? { type: 'cert' as const, index: rightPage.index }
-        : null
-      
-      // Mặt sau là trang bên trái hiện tại (leftPage) - vì khi lật về, trang bên trái sẽ là trang bên phải mới
-      const prevPageIndex = currentPage - 1
-      const backContent = prevPageIndex === 0
-        ? { type: 'cover' as const, index: 0 }
-        : prevPageIndex === 1
-        ? { type: 'cert' as const, index: 0 } // Trang bìa trong = cert[0]
-        : prevPageIndex > 1 && prevPageIndex - 2 >= 0
-        ? { type: 'cert' as const, index: prevPageIndex - 2 } // Trang bên trái hiện tại
-        : null
-        
-      return { front: frontContent, back: backContent }
-    }
-  }
-
-  const flippingContent = getFlippingPageContent()
+  // Tạo mảng các trang
+  const pages = []
   
-  // Helper để render nội dung trang
-  const renderPageContent = (content: { type: 'cover' | 'cert', index: number } | null, pageNum: number) => {
-    if (!content) return null
-    
-    if (content.type === 'cover') {
-      return (
-        <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center">
-          <div className="text-center mb-4">
-            <div className="inline-block border-b-3 border-primary-dark pb-2 mb-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-primary-dark mb-1">
-                SỔ VÀNG
-              </h1>
-              <h2 className="text-lg md:text-xl font-semibold text-primary-dark">
-                BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
-              </h2>
-            </div>
-            <p className="text-sm text-gray-600 italic mt-2">
-              Kỷ niệm 75 năm thành lập
-            </p>
-            <p className="text-base font-bold text-primary-dark mt-1">
-              1951 - 2026
-            </p>
-          </div>
-          <div className="mb-4">
-            <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
-              <span className="text-5xl">🏆</span>
-            </div>
-          </div>
-          <div className="text-center">
-            <p className="text-gray-700 text-sm max-w-md">
-              Thành tựu và vinh dự qua 75 năm phát triển
-            </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary-dark to-transparent mt-3 mx-auto"></div>
-          </div>
+  // Trang 0: Bìa
+  pages.push(
+    <div key="cover" className="page">
+      {renderCoverPage()}
+    </div>
+  )
+
+  // Trang 1: Mặt sau bìa (certificate đầu tiên)
+  if (certificates.length > 0) {
+    pages.push(
+      <div key="cover-back" className="page">
+        {renderCertificatePage(certificates[0], 2)}
+      </div>
+    )
+  }
+
+  // Các trang certificate (mỗi cert 2 trang)
+  for (let i = 0; i < certificates.length; i++) {
+    // Trang chẵn: mặt trước
+    if (i > 0 || certificates.length === 1) {
+      pages.push(
+        <div key={`cert-${i}-front`} className="page">
+          {renderCertificatePage(certificates[i], i * 2 + 2)}
         </div>
       )
-    } else {
-      return certificates[content.index] 
-        ? renderCertificatePage(certificates[content.index], pageNum)
-        : null
+    }
+    
+    // Trang lẻ: mặt sau (certificate tiếp theo)
+    if (i < certificates.length - 1) {
+      pages.push(
+        <div key={`cert-${i}-back`} className="page">
+          {renderCertificatePage(certificates[i + 1], i * 2 + 3)}
+        </div>
+      )
     }
   }
-  
-  // Easing function cho animation mượt mà (giống cuộn giấy)
-  const easeInOutCubic = (t: number): number => {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+
+  if (certificates.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[600px]">
+        <p className="text-gray-600 text-lg">
+          Không tìm thấy bằng khen nào phù hợp với bộ lọc
+        </p>
+      </div>
+    )
   }
-  const easedProgress = easeInOutCubic(flipProgress)
-  
-  const flipRotation = flipDirection === 'next' 
-    ? -180 * easedProgress
-    : flipDirection === 'prev'
-    ? -180 * (1 - easedProgress)
-    : 0
 
   return (
     <>
       <style jsx global>{`
-        .book-container {
+        .certificate-image-wrapper {
           position: relative;
-          perspective: 2000px;
-          perspective-origin: center center;
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
+          cursor: zoom-in;
+          z-index: 9999;
+          transform: translateZ(50px);
+          pointer-events: auto !important;
         }
 
-        .book {
-          position: relative;
-          width: 100%;
-          max-width: 1100px;
-          height: 550px;
-          margin: 0 auto;
-          transform-style: preserve-3d;
-          overflow: visible;
-          display: flex;
-          flex-direction: row;
-          align-items: flex-start;
-        }
-
-        .book-page {
-          position: relative;
-          width: 50%;
-          height: 550px;
-          flex-shrink: 0;
-          margin: 0;
-          padding: 0;
-          transform-style: preserve-3d;
-          box-sizing: border-box;
-          border: none;
-          outline: none;
-        }
-
-        .book-page.left {
-          order: 1;
-          z-index: 0;
-        }
-
-        .book-page.right {
-          order: 2;
-          z-index: 1;
-        }
-
-        .book-page-front,
-        .book-page-back {
-          position: absolute;
+        .certificate-image {
           width: 100%;
           height: 100%;
-          left: 0;
-          top: 0;
-          margin: 0;
-          padding: 0;
-          background: linear-gradient(to bottom right, #fef3c7, #fde68a, #fef3c7);
-          border: none;
-          overflow: visible;
-          box-sizing: border-box;
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-        }
-
-        .book-page-back {
-          transform: rotateY(180deg);
-        }
-
-        .book-page.left .book-page-back {
+          object-fit: contain;
           display: block;
         }
 
-        .book-page.right .book-page-back {
-          display: block;
-        }
-
-        .book-page.left .book-page-front {
-          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.15) inset, 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .book-page.right .book-page-front {
-          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.15) inset, 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .book-page.flipping {
-          z-index: 10;
-        }
-
-        .book-page.flipping.right {
-          transform-origin: left center;
-        }
-
-        .book-page.flipping.left {
-          transform-origin: right center;
-        }
-
-        .flipping-page {
-          position: absolute;
-          width: 50%;
-          height: 550px;
-          top: 0;
-          right: 0;
-          transform-style: preserve-3d;
-          transform-origin: left center;
-          z-index: 50;
-          pointer-events: none;
-        }
-
-        .flipping-page-front,
-        .flipping-page-back {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          left: 0;
-          top: 0;
-          background: linear-gradient(to bottom right, #fef3c7, #fde68a, #fef3c7);
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-          border-radius: 0;
-        }
-
-        .flipping-page-back {
-          transform: rotateY(180deg);
-          box-shadow: 5px 0 15px rgba(0, 0, 0, 0.15) inset;
-        }
-
-        .flipping-page-front {
-          box-shadow: -5px 0 15px rgba(0, 0, 0, 0.15) inset;
-        }
-
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+        .certificate-image-wrapper:hover .certificate-frame {
+          transform: scale(1.05);
+          transition: transform 0.3s ease;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .certificate-frame {
           position: relative;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
           display: inline-block;
           padding: 6px;
           background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #d97706 50%, #f59e0b 75%, #fbbf24 100%);
@@ -531,172 +264,88 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           border-radius: 3px;
           pointer-events: none;
         }
+
+        .page {
+          background: white;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Responsive cho mobile */
+        @media (max-width: 768px) {
+          .page {
+            padding: 0;
+          }
+        }
       `}</style>
 
-      <div className="book-container">
-        <div className="book">
-          {/* Trang bên trái (luôn hiển thị) */}
-          <div
-            className={`book-page left ${isFlipping && currentPage > 0 ? 'flipping' : ''}`}
-            style={{
-              opacity: 1,
-              zIndex: 0,
-            }}
-          >
-            <div className="book-page-front">
-              {leftPage.type === 'empty' ? (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm italic">Trang bìa trong</p>
-                  </div>
-                </div>
-              ) : leftPage.type === 'cover-back' ? (
-                certificates[0] && renderCertificatePage(certificates[0], 1)
-              ) : leftPage.type === 'cert' && leftPage.index >= 0 && leftPage.index < certificates.length ? (
-                renderCertificatePage(certificates[leftPage.index], leftPage.index + 1)
-              ) : (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <p className="text-gray-400 text-sm">Trang trống</p>
-                </div>
-              )}
-            </div>
-            <div className="book-page-back">
-              {leftPage.type === 'empty' ? (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <p className="text-gray-400 text-sm italic">Trang bìa trong</p>
-                  </div>
-                </div>
-              ) : leftPage.type === 'cover-back' && certificates[1] ? (
-                renderCertificatePage(certificates[1], 2)
-              ) : leftPage.type === 'cert' && leftPage.index + 1 < certificates.length ? (
-                renderCertificatePage(certificates[leftPage.index + 1], leftPage.index + 2)
-              ) : (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <p className="text-gray-400 text-sm">Trang trống</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Trang đang lật (hiển thị khi isFlipping) */}
-          {isFlipping && flippingContent.front && (
-            <div
-              className="flipping-page"
-              style={{
-                transform: `rotateY(${flipRotation}deg)`,
-                transition: 'none',
-                zIndex: 50,
-                boxShadow: `${
-                  Math.abs(flipRotation) < 90 
-                    ? '0 20px 60px rgba(0, 0, 0, 0.3), 0 10px 40px rgba(0, 0, 0, 0.2)'
-                    : '0 30px 80px rgba(0, 0, 0, 0.4), 0 20px 60px rgba(0, 0, 0, 0.3)'
-                }`,
-              }}
-            >
-              <div className="flipping-page-front">
-                {flippingContent.front && renderPageContent(
-                  flippingContent.front,
-                  flippingContent.front.type === 'cover' ? 0 : flippingContent.front.index + 1
-                )}
-              </div>
-              <div className="flipping-page-back">
-                {flippingContent.back && renderPageContent(
-                  flippingContent.back,
-                  flippingContent.back.type === 'cover' 
-                    ? 0 
-                    : flipDirection === 'next'
-                      ? flippingContent.back.index + 2  // Trang tiếp theo sau khi lật (bỏ qua trang lẻ)
-                      : flippingContent.back.index + 1
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Trang bên phải (luôn hiển thị) */}
-          <div
-            className={`book-page right ${isFlipping ? 'flipping' : ''}`}
-            style={{
-              opacity: 1,
-            }}
-          >
-            <div className="book-page-front">
-              {rightPage.type === 'cover' ? (
-                <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center">
-                  <div className="text-center mb-4">
-                    <div className="inline-block border-b-3 border-primary-dark pb-2 mb-3">
-                      <h1 className="text-2xl md:text-3xl font-bold text-primary-dark mb-1">
-                        SỔ VÀNG
-                      </h1>
-                      <h2 className="text-lg md:text-xl font-semibold text-primary-dark">
-                        BỆNH VIỆN TRUNG ƯƠNG THÁI NGUYÊN
-                      </h2>
-                    </div>
-                    <p className="text-sm text-gray-600 italic mt-2">
-                      Kỷ niệm 75 năm thành lập
-                    </p>
-                    <p className="text-base font-bold text-primary-dark mt-1">
-                      1951 - 2026
-                    </p>
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center shadow-2xl">
-                      <span className="text-5xl">🏆</span>
-                    </div>
-                  </div>
-
-                  <div className="text-center">
-                    <p className="text-gray-700 text-sm max-w-md">
-                      Thành tựu và vinh dự qua 75 năm phát triển
-                    </p>
-                    <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary-dark to-transparent mt-3 mx-auto"></div>
-                  </div>
-                </div>
-              ) : rightPage.type === 'cert' && rightPage.index >= 0 && rightPage.index < certificates.length ? (
-                renderCertificatePage(certificates[rightPage.index], rightPage.index + 1)
-              ) : (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <p className="text-gray-400 text-sm">Trang trống</p>
-                </div>
-              )}
-            </div>
-            <div className="book-page-back">
-              {rightPage.type === 'cover' ? (
-                certificates[0] && renderCertificatePage(certificates[0], 1)
-              ) : rightPage.type === 'cert' && rightPage.index + 1 < certificates.length ? (
-                renderCertificatePage(certificates[rightPage.index + 1], rightPage.index + 2)
-              ) : (
-                <div className="p-8 md:p-12 h-full flex items-center justify-center">
-                  <p className="text-gray-400 text-sm">Trang trống</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Nút lật trang bên trái */}
-        {currentPage > 0 && !isFlipping && (
-          <button
-            onClick={handlePrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-12 h-12 bg-primary-dark text-white rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-all duration-300 hover:scale-110"
-            aria-label="Trang trước"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-        )}
-
-        {/* Nút lật trang bên phải */}
-        {currentPage < totalPages - 1 && !isFlipping && (
-          <button
-            onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 w-12 h-12 bg-primary-dark text-white rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-all duration-300 hover:scale-110"
-            aria-label="Trang sau"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        )}
+      <div className="flex justify-center items-center w-full py-8">
+        <HTMLFlipBook
+          ref={flipBookRef}
+          width={isMobile ? 350 : 550}
+          height={isMobile ? 500 : 800}
+          minWidth={300}
+          minHeight={400}
+          maxWidth={1100}
+          maxHeight={1600}
+          maxShadowOpacity={0.5}
+          showCover={true}
+          mobileScrollSupport={true}
+          className="book-container"
+          style={{}}
+          startPage={0}
+          size="stretch"
+          drawShadow={true}
+          flippingTime={800}
+          usePortrait={true}
+          startZIndex={0}
+          autoSize={true}
+          clickEventForward={false}
+          useMouseEvents={true}
+          swipeDistance={30}
+          showPageCorners={true}
+          disableFlipByClick={false}
+        >
+          {pages}
+        </HTMLFlipBook>
       </div>
+
+      {/* Overlay hiển thị ảnh to toàn màn hình */}
+      {zoomImage && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
+          onClick={() => setZoomImage(null)}
+        >
+          <img 
+            src={zoomImage} 
+            className="max-w-full max-h-full object-contain animate-in zoom-in duration-300" 
+            alt="Zoomed certificate"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button 
+            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors z-10"
+            onClick={() => setZoomImage(null)}
+            aria-label="Đóng"
+          >
+            &times;
+          </button>
+        </div>
+      )}
     </>
   )
 }
