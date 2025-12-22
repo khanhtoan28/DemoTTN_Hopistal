@@ -42,11 +42,11 @@ Mở [http://localhost:3000](http://localhost:3000) để xem kết quả.
 ```
 ├── app/
 │   ├── page.tsx              # Trang chủ
-│   ├── so-vang/              # Sổ vàng - Bằng khen
-│   ├── hien-vat/             # Danh mục hiện vật
+│   ├── golden-book/              # Sổ vàng - Bằng khen
+│   ├── artifact/             # Danh mục hiện vật
 │   │   └── [id]/             # Chi tiết hiện vật
-│   ├── lich-su/              # Lịch sử 75 năm
-│   └── gioi-thieu/           # Giới thiệu
+│   ├── history/              # Lịch sử 75 năm
+│   └── introduction/           # Giới thiệu
 ├── components/
 │   ├── Header.tsx            # Header với menu
 │   └── Footer.tsx            # Footer

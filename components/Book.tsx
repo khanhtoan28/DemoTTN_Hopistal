@@ -301,8 +301,8 @@ export default function Book({ certificates, onPageClick }: BookProps) {
           height={isMobile ? 500 : 800}
           minWidth={300}
           minHeight={400}
-          maxWidth={1100}
-          maxHeight={1600}
+          maxWidth={800}
+          maxHeight={1200}
           maxShadowOpacity={0.5}
           showCover={true}
           mobileScrollSupport={true}

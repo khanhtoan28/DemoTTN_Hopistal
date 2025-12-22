@@ -8,10 +8,10 @@ export default function Header() {
   const pathname = usePathname()
 
   const menuItems = [
-    { name: 'Sổ vàng', path: '/so-vang' },
-    { name: 'Hiện vật', path: '/hien-vat' },
-    { name: 'Lịch sử', path: '/lich-su' },
-    { name: 'Giới thiệu', path: '/gioi-thieu' },
+    { name: 'Sổ vàng', path: '/golden-book' },
+    { name: 'Hiện vật', path: '/artifact' },
+    { name: 'Lịch sử', path: '/history' },
+    { name: 'Giới thiệu', path: '/introduction' },
   ]
 
   return (

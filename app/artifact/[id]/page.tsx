@@ -102,7 +102,7 @@ export default function ArtifactDetailPage() {
           <h1 className="text-3xl font-bold text-primary-dark mb-4">
             Không tìm thấy hiện vật
           </h1>
-          <Link href="/hien-vat" className="btn-primary inline-block">
+          <Link href="/artifact" className="btn-primary inline-block">
             Quay lại danh sách
           </Link>
         </div>
@@ -111,7 +111,7 @@ export default function ArtifactDetailPage() {
     )
   }
 
-  const qrValue = `${typeof window !== 'undefined' ? window.location.origin : ''}/hien-vat/${artifactId}`
+  const qrValue = `${typeof window !== 'undefined' ? window.location.origin : ''}/artifact/${artifactId}`
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -119,7 +119,7 @@ export default function ArtifactDetailPage() {
 
       <div className="container mx-auto px-4 py-8 flex-1">
         <Link
-          href="/hien-vat"
+          href="/artifact"
           className="inline-flex items-center text-primary-dark hover:text-primary-dark mb-6"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -225,4 +225,3 @@ export default function ArtifactDetailPage() {
     </div>
   )
 }
-

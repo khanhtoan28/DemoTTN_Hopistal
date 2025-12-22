@@ -184,7 +184,7 @@ export default function HienVatPage() {
               {filteredArtifacts.map((artifact) => (
                 <Link
                   key={artifact.id}
-                  href={`/hien-vat/${artifact.id}`}
+                  href={`/artifact/${artifact.id}`}
                   className="card group cursor-pointer"
                 >
                   <div className="relative mb-4 overflow-hidden rounded-lg">

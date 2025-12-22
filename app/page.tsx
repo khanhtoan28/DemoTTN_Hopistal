@@ -26,7 +26,7 @@ export default function Home() {
             <p className="text-xl md:text-2xl mb-8 text-white drop-shadow-lg">
               Kỷ niệm 75 năm thành lập – 1951–2026
             </p>
-            <Link href="/so-vang" className="btn-primary inline-block hover:bg-white hover:text-primary-dark">
+            <Link href="/golden-book" className="btn-primary inline-block hover:bg-white hover:text-primary-dark">
               Khám phá
             </Link>
           </div>
@@ -38,7 +38,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Sổ vàng */}
-            <Link href="/so-vang" className="card group cursor-pointer">
+            <Link href="/golden-book" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#C9A227' }}>
                   <Award className="w-10 h-10" style={{ color: '#8B6B00' }} />
@@ -56,7 +56,7 @@ export default function Home() {
             </Link>
 
             {/* Hiện vật */}
-            <Link href="/hien-vat" className="card group cursor-pointer">
+            <Link href="/artifact" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#8B5A2B' }}>
                   <Archive className="w-10 h-10" style={{ color: '#5C3A1E' }} />
@@ -74,7 +74,7 @@ export default function Home() {
             </Link>
 
             {/* Dòng lịch sử */}
-            <Link href="/lich-su" className="card group cursor-pointer">
+            <Link href="/history" className="card group cursor-pointer">
               <div className="flex flex-col items-center text-center">
                 <div className="opacity-50 group-hover:opacity-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{ backgroundColor: '#0B5ED7' }}>
                   <Clock className="w-10 h-10 text-white" />
