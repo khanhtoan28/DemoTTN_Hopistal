@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import HTMLFlipBook from 'react-pageflip'
 
 interface Certificate {
@@ -18,19 +19,63 @@ interface BookProps {
   onPageClick?: (cert: Certificate) => void
 }
 
+// Kích thước A4 chuẩn (PDF px)
+const PAGE_WIDTH = 595
+const PAGE_HEIGHT = 842
+
+// Năm mốc thành lập
+const FOUNDING_YEAR = 1951
+
 export default function Book({ certificates, onPageClick }: BookProps) {
   const [zoomImage, setZoomImage] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const flipBookRef = useRef<any>(null)
 
-  // Kiểm tra mobile
+  // Resize flipbook theo viewport bằng API updateSize (tỷ lệ A4 chuẩn)
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+    const resize = () => {
+      if (!flipBookRef.current) return
+
+      // Spread = 2 trang A4 cạnh nhau
+      const spreadW = PAGE_WIDTH   // 1190px
+      const spreadH = PAGE_HEIGHT      // 842px
+
+      const vw = window.innerWidth * 0.9
+      const vh = window.innerHeight * 0.9
+
+      // Tính scale để fit viewport
+      const scale = Math.min(vw / spreadW, vh / spreadH)
+
+      // Kích thước sau khi scale
+      const width = spreadW * scale
+      const height = spreadH * scale
+
+      // Gọi API updateSize của pageflip
+      try {
+        const pageFlip = flipBookRef.current?.pageFlip?.()
+        if (pageFlip && typeof pageFlip.updateSize === 'function') {
+          pageFlip.updateSize(width, height)
+        }
+      } catch (error) {
+        console.warn('Failed to update flipbook size:', error)
+      }
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+
+    // Delay để đảm bảo flipbook đã render xong (modal animation + DOM ready)
+    let rafId: number | null = null
+    let timeoutId: NodeJS.Timeout | null = null
+
+    rafId = requestAnimationFrame(() => {
+      timeoutId = setTimeout(() => {
+        resize()
+      }, 200)
+    })
+
+    window.addEventListener('resize', resize)
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      if (timeoutId !== null) clearTimeout(timeoutId)
+      window.removeEventListener('resize', resize)
+    }
   }, [])
 
   // Tính toán số trang
@@ -40,9 +85,27 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
   // Render trang bìa
   const renderCoverPage = () => {
+    // Tính số năm từ năm mốc đến năm hiện tại
+    const currentYear = new Date().getFullYear()
+    const yearsSince = currentYear - FOUNDING_YEAR
+
     return (
-      <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-800 via-red-900 to-red-800">
+
+      <div className="p-4 md:p-8 h-full flex flex-col items-center justify-start pt-15 md:pt-20 bg-gradient-to-br from-red-800 via-red-900 to-red-800">
         <div className="text-center mb-4">
+          {/* Logo hình tròn */}
+          <div className="mb-4 flex justify-center">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-white shadow-lg border-2 border-white/20">
+              <Image
+                src="/img/logo.webp"
+                alt="Logo Bệnh viện"
+                width={96}
+                height={96}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+          
           <div className="inline-block border-b-3 border-white pb-2 mb-3">
             <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
               SỔ VÀNG
@@ -52,10 +115,10 @@ export default function Book({ certificates, onPageClick }: BookProps) {
             </h2>
           </div>
           <p className="text-sm text-white text-opacity-90 italic mt-2">
-            Kỷ niệm 75 năm thành lập
+            Kỷ niệm {yearsSince} năm thành lập
           </p>
           <p className="text-base font-bold text-white mt-1">
-            1951 - 2026
+            {FOUNDING_YEAR} - {currentYear}
           </p>
         </div>
         <div className="mb-20">
@@ -65,10 +128,10 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         </div>
         <div className="text-center">
           <p className="text-white text-opacity-90 text-sm max-w-md">
-            Thành tựu và vinh dự qua 75 năm phát triển
+            Thành tựu và vinh dự qua {yearsSince} năm phát triển
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-transparent via-white to-transparent mt-3 mx-auto"></div>
-        </div>
+        </div> 
       </div>
     )
   }
@@ -76,8 +139,7 @@ export default function Book({ certificates, onPageClick }: BookProps) {
   // Render trang bìa cuối
   const renderBackCoverPage = () => {
     return (
-      <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-800 via-red-900 to-red-800">
-        
+<div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-amber-100 to-yellow-100 border-4 border-double border-yellow-600">        
       </div>
     )
   }
@@ -163,49 +225,68 @@ export default function Book({ certificates, onPageClick }: BookProps) {
 
   // Tạo mảng các trang
   const pages = []
-  
-  // Trang 0: Bìa
+
+  // --- TRANG 0: BÌA NGOÀI (Màu đỏ) ---
   pages.push(
     <div key="cover" className="page">
+      
       {renderCoverPage()}
     </div>
   )
 
-  // Trang 1: Mặt sau bìa (TRỐNG - chỉ có background)
+  // --- TRANG 1: MẶT SAU CỦA BÌA (Bìa trong) ---
+  // Trang này nằm bên TRÁI khi mở sách ra
   pages.push(
-    <div key="cover-back" className="page">
+    <div key="cover-inside" className="page">
       {renderBackCoverPage()}
     </div>
   )
 
-  // Các trang certificate
-  // Logic: 
-  // - Trang 2, 4, 6, ...: Mặt trước của mỗi certificate
-  // - Trang 3, 5, 7, ...: Mặt sau của certificate trước = Mặt trước của certificate tiếp theo
-  // Vì mặt sau cert[i] = mặt trước cert[i+1], nên chúng ta render:
-  // - cert[0] mặt trước (trang 2)
-  // - cert[1] mặt trước (trang 3) - cũng là mặt sau cert[0]
-  // - cert[2] mặt trước (trang 4) - cũng là mặt sau cert[1]
-  // - ...
-  for (let i = 0; i < certificates.length; i++) {
-    const pageNum = i + 2 // Trang 2, 3, 4, 5, ...
+  // --- CÁC TRANG CHỨNG CHỈ (Nối tiếp nhau liên tục) ---
+  // Cert 1 (Trang 2 - Phải) -> Cert 2 (Trang 3 - Trái) -> Cert 3 (Trang 4 - Phải)...
+  // react-pageflip sẽ tự động sắp xếp: trang đầu vào bên Phải, trang tiếp theo vào bên Trái (mặt sau tờ 1)
+  certificates.forEach((cert, index) => {
+    // Số thứ tự trang thực tế để hiển thị (bắt đầu từ 1)
+    const displayPageNum = index + 1
+    
     pages.push(
-      <div key={`cert-${i}`} className="page">
-        {renderCertificatePage(certificates[i], pageNum)}
+      <div key={`cert-${cert.id}`} className="page">
+        {renderCertificatePage(cert, displayPageNum)}
+      </div>
+    )
+  })
+
+  // --- XỬ LÝ TRANG CUỐI ---
+  // Để sách đóng lại đẹp, cần đảm bảo trang cuối cùng là bìa sau.
+  // Logic: 
+  // - Bìa trước (1) + Bìa trong (1) = 2 trang đầu.
+  // - Nếu tổng số chứng chỉ là LẺ: Trang cuối cùng là chứng chỉ nằm ở bên PHẢI. Bìa sau sẽ ốp vào ngay sau đó (bên TRÁI) -> OK.
+  // - Nếu tổng số chứng chỉ là CHẴN: Trang chứng chỉ cuối cùng nằm ở bên TRÁI. Bên PHẢI đang trống.
+  //   Cần thêm 1 trang trắng đệm vào bên PHẢI trước khi đóng bìa.
+  if (certificates.length % 2 === 0) {
+    // Nếu chẵn chứng chỉ, thêm 1 trang trắng để lấp đầy bên phải
+    pages.push(
+      <div key="filler-page" className="page">
+        <div className="h-full w-full bg-gradient-to-br from-yellow-50 via-white to-yellow-50"></div>
       </div>
     )
   }
 
-  // Trang bìa cuối: mặt sau của certificate cuối cùng
-  if (certificates.length > 0) {
-    // Tính số trang hiện tại để đánh số trang bìa cuối
-    const lastPageNum = certificates.length * 2 + 1
-    pages.push(
-      <div key="back-cover" className="page">
-        {renderBackCoverPage()}
+  // --- BÌA SAU (Mặt trong) ---
+  pages.push(
+    // <div key="back-cover-inside" className="page">
+    //   {renderBackCoverPage()}
+    // </div>
+  )
+
+  // --- BÌA SAU (Mặt ngoài - Có thể làm giống bìa trước nhưng bỏ chữ) ---
+  pages.push(
+    <div key="back-cover-outside" className="page">
+      
+      <div className="p-4 md:p-6 h-full flex flex-col items-center justify-center bg-gradient-to-br from-red-800 via-red-900 to-red-800">
       </div>
-    )
-  }
+      </div>
+  )
 
   if (certificates.length === 0) {
     return (
@@ -316,27 +397,27 @@ export default function Book({ certificates, onPageClick }: BookProps) {
         }
       `}</style>
 
-      <div className="flex justify-center items-center w-full py-8">
+      <div className="w-full h-full flex items-center justify-center overflow-hidden">
         <HTMLFlipBook
           ref={flipBookRef}
-          width={isMobile ? 350 : 550}
-          height={isMobile ? 500 : 800}
+          width={PAGE_WIDTH }
+          height={PAGE_HEIGHT}
           minWidth={300}
-          minHeight={400}
-          maxWidth={800}
-          maxHeight={1200}
+          minHeight={212}
+          maxWidth={2400}
+          maxHeight={1684}
           maxShadowOpacity={0.5}
           showCover={true}
-          mobileScrollSupport={true}
+          mobileScrollSupport={false}
           className="book-container"
           style={{}}
           startPage={0}
-          size="stretch"
+          size="fixed"
           drawShadow={true}
           flippingTime={800}
-          usePortrait={true}
+          usePortrait={false}
           startZIndex={0}
-          autoSize={true}
+          autoSize={false}
           clickEventForward={false}
           useMouseEvents={true}
           swipeDistance={30}
@@ -359,13 +440,13 @@ export default function Book({ certificates, onPageClick }: BookProps) {
             alt="Zoomed certificate"
             onClick={(e) => e.stopPropagation()}
           />
-          <button 
+          {/* <button 
             className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors z-10"
             onClick={() => setZoomImage(null)}
             aria-label="Đóng"
           >
             &times;
-          </button>
+          </button> */}
         </div>
       )}
     </>

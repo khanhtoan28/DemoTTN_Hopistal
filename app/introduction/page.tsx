@@ -1,7 +1,74 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { introductionService } from '@/lib/api/services'
+import { Introduction } from '@/lib/api/types'
 
 export default function GioiThieuPage() {
+  const [introductions, setIntroductions] = useState<Introduction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchIntroductions = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await introductionService.getAll()
+        
+        if (response.success && response.data) {
+          setIntroductions(response.data)
+        } else {
+          setError(response.error || 'Không thể tải dữ liệu giới thiệu')
+        }
+      } catch (err) {
+        console.error('Error fetching introductions:', err)
+        setError('Đã xảy ra lỗi khi tải dữ liệu')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIntroductions()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-16 flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-dark mb-4"></div>
+            <p className="text-lg text-gray-700">Đang tải dữ liệu...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <div className="container mx-auto px-4 py-16 flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-primary"
+            >
+              Thử lại
+            </button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
@@ -12,76 +79,24 @@ export default function GioiThieuPage() {
             Giới thiệu
           </h1>
 
-          <div className="space-y-8 text-lg text-gray-700 leading-relaxed">
-            <div className="card">
-              <h2 className="text-2xl font-bold text-primary-dark mb-4">
-                Phòng Truyền Thống
-              </h2>
-              <p>
-                Phòng Truyền Thống Bệnh viện Trung ương Thái Nguyên được thành lập
-                nhân dịp kỷ niệm 75 năm thành lập bệnh viện (1951-2026). Đây là không gian
-                lưu giữ và trưng bày những giá trị lịch sử, thành tựu và kỷ vật quý giá
-                của bệnh viện qua các thời kỳ phát triển.
-              </p>
+          {introductions.length === 0 ? (
+            <div className="card text-center py-12">
+              <p className="text-gray-600 text-lg">Chưa có nội dung giới thiệu</p>
             </div>
-
-            <div className="card">
-              <h2 className="text-2xl font-bold text-primary-dark mb-4">
-                Sứ mệnh
-              </h2>
-              <p>
-                Phòng Truyền Thống có sứ mệnh bảo tồn, lưu giữ và phát huy những giá trị
-                lịch sử của bệnh viện, giáo dục truyền thống cho thế hệ cán bộ nhân viên
-                hiện tại và tương lai, đồng thời là điểm đến tham quan, học tập cho mọi
-                người quan tâm đến lịch sử y tế.
-              </p>
+          ) : (
+            <div className="space-y-8 text-lg text-gray-700 leading-relaxed">
+              {introductions.map((intro) => (
+                <div key={intro.introductionId} className="card">
+                  <h2 className="text-2xl font-bold text-primary-dark mb-4">
+                    {intro.section}
+                  </h2>
+                  <div className="whitespace-pre-line">
+                    {intro.content}
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="card">
-              <h2 className="text-2xl font-bold text-primary-dark mb-4">
-                Nội dung trưng bày
-              </h2>
-              <ul className="list-disc list-inside space-y-2">
-                <li>
-                  <strong>Sổ vàng:</strong> Các bằng khen, giấy khen, huân chương và thành
-                  tích đạt được qua các thời kỳ
-                </li>
-                <li>
-                  <strong>Hiện vật:</strong> Các thiết bị y tế, tư liệu, hình ảnh và kỷ vật
-                  lịch sử quý giá
-                </li>
-                <li>
-                  <strong>Lịch sử:</strong> Dòng lịch sử 75 năm phát triển với các cột mốc
-                  quan trọng
-                </li>
-                <li>
-                  <strong>Tư liệu:</strong> Các tài liệu, sách báo, hình ảnh ghi lại quá
-                  trình phát triển
-                </li>
-              </ul>
-            </div>
-
-            <div className="card">
-              <h2 className="text-2xl font-bold text-primary-dark mb-4">
-                Liên hệ
-              </h2>
-              <p>
-                Để biết thêm thông tin hoặc đóng góp hiện vật, tư liệu cho Phòng Truyền
-                Thống, vui lòng liên hệ:
-              </p>
-              <div className="mt-4 space-y-2">
-                <p>
-                  <strong>Địa chỉ:</strong> Bệnh viện Trung ương Thái Nguyên
-                </p>
-                <p>
-                  <strong>Email:</strong> info@bvtwthainguyen.vn
-                </p>
-                <p>
-                  <strong>Điện thoại:</strong> (028) 1234 5678
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

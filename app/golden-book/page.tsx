@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Book from '@/components/Book'
-import { Download, X } from 'lucide-react'
+import { Download, X, BookOpen } from 'lucide-react'
 import { goldenBookService } from '@/lib/api/services'
 import { GoldenBook } from '@/lib/api/types'
 
@@ -21,6 +21,7 @@ interface Certificate {
 export default function SoVangPage() {
   const [certificates, setCertificates] = useState<Certificate[]>([])
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null)
+  const [showBookModal, setShowBookModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,6 +57,26 @@ export default function SoVangPage() {
 
     fetchCertificates()
   }, [])
+
+  // Xử lý phím ESC để đóng modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showBookModal) {
+        setShowBookModal(false)
+      }
+    }
+
+    if (showBookModal) {
+      document.addEventListener('keydown', handleEscape)
+      // Ngăn scroll body khi modal mở
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [showBookModal])
 
   if (loading) {
     return (
@@ -107,16 +128,57 @@ export default function SoVangPage() {
         </div>
 
         {certificates.length > 0 ? (
-          <Book
-            certificates={certificates}
-            onPageClick={(cert) => setSelectedCert(cert)}
-          />
+          <>
+            <div className="text-center mb-8">
+              <p className="text-gray-600 mb-4">
+                Nhấn vào nút bên dưới để xem sổ vàng dạng sách
+              </p>
+              <button
+                onClick={() => setShowBookModal(true)}
+                className="btn-primary inline-flex items-center space-x-2 text-lg px-8 py-4"
+              >
+                <BookOpen className="w-6 h-6" />
+                <span>Xem Sổ Vàng</span>
+              </button>
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <p className="text-lg text-gray-600">Chưa có dữ liệu sổ vàng</p>
           </div>
         )}
       </main>
+
+      {/* Modal hiển thị sổ vàng */}
+      {showBookModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setShowBookModal(false)}
+        >
+          {/* Nút đóng */}
+          {/* <button
+            onClick={() => setShowBookModal(false)}
+            className="absolute top-4 right-4 z-[60] bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors"
+            aria-label="Đóng"
+          >
+            <X className="w-6 h-6 text-gray-700" />
+          </button> */}
+
+          {/* Sổ vàng - fit với màn hình */}
+          <div
+            className="relative w-full h-full flex items-center justify-center overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Book
+              certificates={certificates}
+              onPageClick={(cert) => {
+                setSelectedCert(cert)
+                setShowBookModal(false)
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Modal chi tiết */}
       {selectedCert && (
