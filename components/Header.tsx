@@ -10,6 +10,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const menuItems = [
+    { name: 'Trang chủ', path: '/' },
     { name: 'Sổ vàng', path: '/golden-book' },
     { name: 'Hiện vật', path: '/artifact' },
     { name: 'Lịch sử', path: '/history' },

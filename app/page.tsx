@@ -1,10 +1,34 @@
+'use client'
+
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Award, Archive, Clock } from 'lucide-react'
+import { Award, Archive, Clock, Medal, Trophy, Star, ArrowUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
+  const [showScrollTop, setShowScrollTop] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true)
+      } else {
+        setShowScrollTop(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -43,13 +67,17 @@ export default function Home() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
-                href="/golden-book" 
+                href="http://dkkbtx.bvdktuthainguyen.gov.vn/#/" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-block bg-primary-dark text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-dark/90 transition-all duration-300 shadow-lg text-center"
               >
                 Đặt lịch khám ngay
               </Link>
               <Link 
-                href="/golden-book" 
+                href="https://youtu.be/aAh88_28P8M?si=dobStcH_rkVG3BR5" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-block bg-transparent text-white border-2 border-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary-dark transition-all duration-300 text-center"
               >
                 Xem Video Giới Thiệu
@@ -59,12 +87,12 @@ export default function Home() {
         </div>
 
         {/* Stat Cards - Floating on bottom of hero */}
-        <div className="absolute bottom-0 left-0 w-full translate-y-1/2 z-30 px-4">
+        <div className="absolute -bottom-5 left-0 w-full translate-y-1/2  ">
           <div className="container mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
               {/* Card 1: Năm phát triển */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
-                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   75
                 </div>
                 <div className="text-xs md:text-base text-gray-600">
@@ -73,8 +101,8 @@ export default function Home() {
               </div>
 
               {/* Card 2: Cán bộ nhân viên */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
-                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   1000+
                 </div>
                 <div className="text-xs md:text-base text-gray-600">
@@ -83,18 +111,18 @@ export default function Home() {
               </div>
 
               {/* Card 3: Bệnh nhân/năm */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
-                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   500K+
                 </div>
                 <div className="text-xs md:text-base text-gray-600">
-                  Bệnh nhân/năm
+                  Lượt khám/năm
                 </div>
               </div>
 
               {/* Card 4: Khoa phòng */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-3xl transition-shadow duration-300">
-                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-blue-700 mb-2 leading-tight">
+              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+                <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   50+
                 </div>
                 <div className="text-xs md:text-base text-gray-600">
@@ -107,7 +135,7 @@ export default function Home() {
       </section>
 
       {/* History & Mission Section */}
-      <section className="mt-20 py-24 md:py-32 bg-gray-50">
+      <section className="mt-20 py-24 md:py-32 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Column - Text Content */}
@@ -264,7 +292,7 @@ export default function Home() {
       </section>
 
       {/* 3 Khối giới thiệu */}
-      <section className="py-20 bg-gray-50">
+      <section className="mt-20 py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Sổ vàng */}
@@ -274,8 +302,8 @@ export default function Home() {
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Gold */}
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-yellow-200/50 transition-all duration-300">
-                  <Award className="w-12 h-12 text-yellow-600 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-yellow-200/50 transition-all duration-300">
+                  <Award className="w-10 h-10 text-yellow-600 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
                 
                 {/* Title */}
@@ -305,8 +333,8 @@ export default function Home() {
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Brown */}
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-amber-200/50 transition-all duration-300">
-                  <Archive className="w-12 h-12 text-amber-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-amber-200/50 transition-all duration-300">
+                  <Archive className="w-10 h-10 text-amber-700 group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
                 
                 {/* Title */}
@@ -336,8 +364,8 @@ export default function Home() {
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Hospital Blue */}
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-blue-200/50 transition-all duration-300">
-                  <Clock className="w-12 h-12 text-primary-dark group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-blue-200/50 transition-all duration-300">
+                  <Clock className="w-10 h-10 text-primary-dark group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
                 
                 {/* Title */}
@@ -363,9 +391,176 @@ export default function Home() {
         </div>
       </section>
 
-     
+      <section className="mt-10 py-20 md:py-10 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+            {[
+              {
+                title: "Anh hùng Lao động",
+                icon: Award,
+              },
+              {
+                title: "Huân chương Độc lập",
+                icon: Medal,
+              },
+              {
+                title: "Bệnh viện xuất sắc",
+                icon: Trophy,
+              },
+              {
+                title: "Cờ thi đua của Chính phủ",
+                icon: Star,
+              },
+            ].map((item, index) => {
+              const IconComponent = item.icon;
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-center text-center"
+                >
+                  <IconComponent
+                    className="w-16 h-16 text-[#D4AF37] mb-4"
+                    strokeWidth={1.5}
+                    // fill="#D4AF37"
+                  />
+                  <h3 className="text-gray-800 font-medium text-lg mt-2">
+                    {item.title}
+                  </h3>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-20 py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-40 h-1 bg-[#D4AF37]"></div>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-900">
+              Ban Giám đốc Bệnh viện
+            </h2>
+          </div>
+
+          {/* Directors Grid */}
+          <div className="max-w-8xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {[
+                {
+                  name: "PGS.TS. Nguyễn Công Hoàng",
+                  role: "Bí thư Đảng ủy - Giám đốc Bệnh viện",
+                  image: "/img/giamdoc moi.jpg",
+                },
+                {
+                  name: "BSCKII. Hà Tiến Quang",
+                  role: "Phó Bí thư TT Đảng ủy - Phó Giám đốc Bệnh viện",
+                  image: "/img/2_quang.jpg",
+                },
+                {
+                  name: "TS. Lê Thị Hương Lan",
+                  role: "Ủy viên BTV Đảng ủy - Trưởng Ban Tuyên giáo - Phó Giám đốc Bệnh viện",
+                  image: "/img/le thi huong lan.jpg",
+                },
+                {
+                  name: "BSCKII. Đồng Quang Sơn",
+                  role: "Ủy viên BTV Đảng ủy - Phó Giám đốc Bệnh viện",
+                  image: "/img/ss (1).jpg",
+                },
+              ].map((director, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  {/* Image Section - 70-75% of card height */}
+                  <div className="relative h-[430px] md:h-[400px] bg-gray-200">
+                    {director.image ? (
+                      <Image
+                        src={director.image}
+                        alt={director.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <span className="text-gray-400 text-sm">No Image</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info Section - White background */}
+                  <div className="bg-white p-6">
+                    <h3 className="text-xl font-bold text-blue-900 mb-2">
+                      {director.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      {director.role}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="mt-20 pt-20 bg-gray-50 pb-0">
+        <div className="container mx-auto px-4">
+          {/* Blue Card Container */}
+          <div className="bg-[#004795] rounded-t-[80px] py-16 px-8 md:px-20 text-center shadow-lg">
+            {/* Headline */}
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Chúng tôi luôn sẵn sàng lắng nghe bạn
+            </h2>
+            
+            {/* Sub-headline */}
+            <p className="text-blue-100 text-lg mb-10 font-normal">
+              Hệ thống hỗ trợ trực tuyến 24/7 và cổng thông tin bệnh nhân hiện đại.
+            </p>
+            
+            {/* Buttons Group */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+              {/* Button 1: Đặt lịch hẹn (Màu vàng) */}
+            <Link
+              href="http://dkkbtx.bvdktuthainguyen.gov.vn/#/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#dca835] hover:bg-[#c9962a] text-[#003b7a] font-bold py-3 px-8 rounded-full transition-colors duration-300 uppercase text-sm tracking-wide min-w-[180px] text-center"
+            >
+              Đặt lịch hẹn
+            </Link>
+            
+            {/* Button 2: Cổng thông tin (Viền trắng) */}
+            <Link
+              href="http://dkkbtx.bvdktuthainguyen.gov.vn/#/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-transparent border border-white text-white hover:bg-white hover:text-[#004795] font-bold py-3 px-8 rounded-full transition-all duration-300 uppercase text-sm tracking-wide text-center"
+            >
+              Cổng thông tin bệnh nhân
+            </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 bg-[#004795] hover:bg-[#003b7a] text-white p-4 rounded-full shadow-lg hover:shadow-xl z-50 flex items-center justify-center group transition-all duration-300 ${
+          showScrollTop 
+            ? 'opacity-100 translate-y-0 pointer-events-auto' 
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+        aria-label="Scroll to top"
+      >
+        <ArrowUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform duration-300" />
+      </button>
     </div>
   )
 }
