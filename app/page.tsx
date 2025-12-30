@@ -5,10 +5,12 @@ import Footer from '@/components/Footer'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Award, Archive, Clock, Medal, Trophy, Star, ArrowUp } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set())
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({})
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +23,41 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Intersection Observer cho scroll animation
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-10% 0px -10% 0px',
+      threshold: 0.1
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.getAttribute('data-section-id')
+          if (sectionId) {
+            setVisibleSections((prev) => new Set(prev).add(sectionId))
+          }
+        }
+      })
+    }, observerOptions)
+
+    // Observe tất cả các section
+    Object.values(sectionRefs.current).forEach((ref) => {
+      if (ref) {
+        observer.observe(ref)
+      }
+    })
+
+    return () => {
+      Object.values(sectionRefs.current).forEach((ref) => {
+        if (ref) {
+          observer.unobserve(ref)
+        }
+      })
+    }
   }, [])
 
   const scrollToTop = () => {
@@ -87,11 +124,19 @@ export default function Home() {
         </div>
 
         {/* Stat Cards - Floating on bottom of hero */}
-        <div className="absolute -bottom-5 left-0 w-full translate-y-1/2  ">
+        <div 
+          ref={(el) => { sectionRefs.current['stats'] = el }}
+          data-section-id="stats"
+          className="absolute -bottom-5 left-0 w-full translate-y-1/2"
+        >
           <div className="container mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
               {/* Card 1: Năm phát triển */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+              <div className={`bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-all duration-700 delay-0 ${
+                visibleSections.has('stats')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   75
                 </div>
@@ -101,7 +146,11 @@ export default function Home() {
               </div>
 
               {/* Card 2: Cán bộ nhân viên */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+              <div className={`bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-all duration-700 delay-100 ${
+                visibleSections.has('stats')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   1000+
                 </div>
@@ -111,7 +160,11 @@ export default function Home() {
               </div>
 
               {/* Card 3: Bệnh nhân/năm */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+              <div className={`bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-all duration-700 delay-200 ${
+                visibleSections.has('stats')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   500K+
                 </div>
@@ -121,7 +174,11 @@ export default function Home() {
               </div>
 
               {/* Card 4: Khoa phòng */}
-              <div className="bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-shadow duration-300">
+              <div className={`bg-white rounded-[20px] shadow-2xl p-6 md:p-8 text-center hover:shadow-10xl transition-all duration-700 delay-300 ${
+                visibleSections.has('stats')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="text-3xl md:text-5xl lg:text-6xl font-bold text-red-700 mb-2 leading-tight">
                   50+
                 </div>
@@ -135,7 +192,15 @@ export default function Home() {
       </section>
 
       {/* History & Mission Section */}
-      <section className="mt-20 py-24 md:py-32 bg-white">
+      <section 
+        ref={(el) => { sectionRefs.current['history'] = el }}
+        data-section-id="history"
+        className={`mt-20 py-24 md:py-32 bg-white transition-all duration-1000 ${
+          visibleSections.has('history')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Column - Text Content */}
@@ -176,7 +241,15 @@ export default function Home() {
       </section>
 
        {/* Timeline Hành trình 75 năm */}
-       <section className="pt-40 md:pt-20 pb-20 bg-[#0A2F57] relative overflow-hidden z-10">
+       <section 
+        ref={(el) => { sectionRefs.current['timeline'] = el }}
+        data-section-id="timeline"
+        className={`pt-40 md:pt-20 pb-20 bg-[#0A2F57] relative overflow-hidden z-10 transition-all duration-1000 ${
+          visibleSections.has('timeline')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-1">
           {/* Title Section */}
           <div className="text-center mb-16">
@@ -196,7 +269,11 @@ export default function Home() {
             {/* Timeline Items */}
             <div className="relative grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-4">
               {/* 1951 */}
-              <div className="relative group">
+              <div className={`relative group transition-all duration-700 delay-0 ${
+                visibleSections.has('timeline')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="flex flex-col items-center">
                   {/* Year */}
                   <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
@@ -219,7 +296,11 @@ export default function Home() {
               </div>
 
               {/* 1970 */}
-              <div className="relative group">
+              <div className={`relative group transition-all duration-700 delay-200 ${
+                visibleSections.has('timeline')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="flex flex-col items-center">
                   {/* Year */}
                   <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
@@ -242,7 +323,11 @@ export default function Home() {
               </div>
 
               {/* 1990 */}
-              <div className="relative group">
+              <div className={`relative group transition-all duration-700 delay-400 ${
+                visibleSections.has('timeline')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="flex flex-col items-center">
                   {/* Year */}
                   <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
@@ -265,7 +350,11 @@ export default function Home() {
               </div>
 
               {/* 2025 */}
-              <div className="relative group">
+              <div className={`relative group transition-all duration-700 delay-600 ${
+                visibleSections.has('timeline')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}>
                 <div className="flex flex-col items-center">
                   {/* Year */}
                   <div className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6 group-hover:text-[#E5C158] transition-colors duration-300">
@@ -292,13 +381,26 @@ export default function Home() {
       </section>
 
       {/* 3 Khối giới thiệu */}
-      <section className="mt-20 py-20 bg-white">
+      <section 
+        ref={(el) => { sectionRefs.current['intro'] = el }}
+        data-section-id="intro"
+        className={`mt-20 py-20 bg-white transition-all duration-1000 ${
+          visibleSections.has('intro')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Sổ vàng */}
             <Link 
               href="/golden-book" 
-              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+              className={`group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-700 ease-out cursor-pointer ${
+                visibleSections.has('intro')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '0ms' }}
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Gold */}
@@ -329,7 +431,12 @@ export default function Home() {
             {/* Hiện vật */}
             <Link 
               href="/artifact" 
-              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+              className={`group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-700 ease-out cursor-pointer ${
+                visibleSections.has('intro')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '150ms' }}
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Brown */}
@@ -360,7 +467,12 @@ export default function Home() {
             {/* Dòng lịch sử */}
             <Link 
               href="/history" 
-              className="group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer"
+              className={`group relative bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-700 ease-out cursor-pointer ${
+                visibleSections.has('intro')
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '300ms' }}
             >
               <div className="flex flex-col items-center text-center h-full">
                 {/* Icon Circle - Hospital Blue */}
@@ -391,7 +503,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10 py-20 md:py-10 bg-gray-50">
+      <section 
+        ref={(el) => { sectionRefs.current['awards'] = el }}
+        data-section-id="awards"
+        className={`mt-10 py-20 md:py-10 bg-gray-50 transition-all duration-1000 ${
+          visibleSections.has('awards')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {[
@@ -416,7 +536,12 @@ export default function Home() {
               return (
                 <div
                   key={index}
-                  className="flex flex-col items-center text-center"
+                  className={`flex flex-col items-center text-center transition-all duration-700 ${
+                    visibleSections.has('awards')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <IconComponent
                     className="w-16 h-16 text-[#D4AF37] mb-4"
@@ -433,7 +558,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-20 py-20 bg-white">
+      <section 
+        ref={(el) => { sectionRefs.current['directors'] = el }}
+        data-section-id="directors"
+        className={`mt-20 py-20 bg-white transition-all duration-1000 ${
+          visibleSections.has('directors')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-12">
@@ -472,7 +605,12 @@ export default function Home() {
               ].map((director, index) => (
                 <div
                   key={index}
-                  className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className={`bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-700 ${
+                    visibleSections.has('directors')
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${index * 150}ms` }}
                 >
                   {/* Image Section - 70-75% of card height */}
                   <div className="relative h-[430px] md:h-[400px] bg-gray-200">
@@ -507,7 +645,15 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="mt-20 pt-20 bg-white pb-0">
+      <section 
+        ref={(el) => { sectionRefs.current['cta'] = el }}
+        data-section-id="cta"
+        className={`mt-20 pt-20 bg-white pb-0 transition-all duration-1000 ${
+          visibleSections.has('cta')
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-10'
+        }`}
+      >
         <div className="container mx-auto px-4">
           {/* Blue Card Container */}
           <div className="bg-[#004795] rounded-t-[80px] py-16 px-8 md:px-20 text-center shadow-lg">

@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { loadImageWithAuth } from '@/lib/utils/loadImageWithAuth'
 
 import Image from 'next/image'
 import HTMLFlipBook from 'react-pageflip'
+import ProtectedImage from '@/components/ProtectedImage'
 
 interface Certificate {
   id: number
@@ -29,6 +32,7 @@ const FOUNDING_YEAR = 1951
 
 export default function Book({ certificates, onPageClick }: BookProps) {
   const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const { token } = useAuth()
   const flipBookRef = useRef<any>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [bookSize, setBookSize] = useState({ width: PAGE_WIDTH * 2, height: PAGE_HEIGHT })
@@ -218,10 +222,15 @@ export default function Book({ certificates, onPageClick }: BookProps) {
                 // Giữ flip bị khóa khi di chuyển pointer trong vùng ảnh
                 e.stopPropagation()
               }}
-              onPointerUp={(e) => {
+              onPointerUp={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                setZoomImage(cert.image)
+                try {
+                  const src = await loadImageWithAuth(cert.image, token || undefined)
+                  setZoomImage(src)
+                } catch (err) {
+                  setZoomImage(cert.image)
+                }
                 // Delay để đảm bảo zoom modal mở trước khi enable flip
                 setTimeout(() => {
                   enableFlip()
@@ -238,15 +247,10 @@ export default function Book({ certificates, onPageClick }: BookProps) {
             >
               <div className="certificate-frame" style={{ width: '100%', height: '100%' }}>
                 <div className="certificate-frame-inner" style={{ width: '100%', height: '100%' }}>
-                  <img
+                  <ProtectedImage
                     src={cert.image}
                     alt={cert.name}
                     className="certificate-image"
-                    loading="lazy"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                    }}
                   />
                 </div>
               </div>

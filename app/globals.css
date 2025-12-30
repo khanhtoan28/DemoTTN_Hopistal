@@ -12,6 +12,45 @@
   }
 }
 
+/* Hospital background system - subtle, bright, and professional */
+.hospital-base-bg {
+  background: linear-gradient(180deg,#fbfdff 0%, #f3f9ff 100%);
+}
+
+.hospital-hero-bg {
+  background: linear-gradient(180deg,#ffffff 0%, #eef8ff 60%);
+}
+
+.surface-white {
+  background-color: #ffffff;
+}
+
+.surface-blue {
+  background: linear-gradient(180deg,#f6fbff 0%, #eef9ff 100%);
+}
+
+.strip-gradient {
+  background: linear-gradient(90deg,#f8fcff 0%, #f1f9f6 100%);
+}
+
+.history-gallery {
+  background: linear-gradient(180deg,#fbf7ef 0%, #f3f9ff 100%);
+  background-image: repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0 1px, transparent 1px 80px);
+}
+
+.mission-engraved {
+  background: linear-gradient(180deg,#ffffff 0%, #f6fbff 100%);
+  box-shadow: 0 8px 24px rgba(2,6,23,0.04);
+  border-radius: 1rem;
+  border: 1px solid rgba(14,77,97,0.04);
+}
+
+.floating-surface {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 12px 30px rgba(2,6,23,0.06);
+}
+
 @layer components {
   .btn-primary {
     @apply bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all duration-300 shadow-lg;

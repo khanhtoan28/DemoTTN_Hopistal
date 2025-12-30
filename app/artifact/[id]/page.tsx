@@ -5,10 +5,13 @@ import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
-import { ArrowLeft, QrCode, Calendar, MapPin } from 'lucide-react'
+import { ArrowLeft, QrCode, Calendar, MapPin, Download, Printer } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import { artifactsService } from '@/lib/api/services'
 import { Artifact } from '@/lib/api/types'
+import Image from 'next/image'
+import { useAuth } from '@/contexts/AuthContext'
+import { loadImageWithAuth } from '@/lib/utils/loadImageWithAuth'
 
 interface ArtifactDetail {
   id: number
@@ -28,6 +31,8 @@ export default function ArtifactDetailPage() {
   const params = useParams()
   const artifactId = params.id as string
   const [artifact, setArtifact] = useState<ArtifactDetail | null>(null)
+  const { token } = useAuth()
+  const [imageSrc, setImageSrc] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,18 +52,29 @@ export default function ArtifactDetailPage() {
 
         const response = await artifactsService.getById(id)
         
+        console.log('API Response:', response) // Debug log
+        
         if (response.success && response.data) {
           const data = response.data
+          console.log('Artifact Data:', data) // Debug log
+          
+          // Parse year from period (e.g., "1951-2025" -> 1951, or "1951" -> 1951)
+          let year = 1951 // Default
+          if (data.period) {
+            const yearMatch = data.period.match(/^(\d{4})/)
+            if (yearMatch) {
+              year = parseInt(yearMatch[1])
+            }
+          }
+          
           // Map dữ liệu từ API format sang format mà component cần
-          // Lưu ý: API chỉ có artifactId, artifactName, description, imageUrl
-          // Các field khác sẽ dùng giá trị mặc định
           const mappedArtifact: ArtifactDetail = {
             id: data.artifactId,
             name: data.artifactName,
-            period: '1951-2025', // Default value
-            year: 1951, // Default value
-            type: 'Khác', // Default value
-            space: 'Khu A', // Default value
+            period: data.period || '1951-2025',
+            year: year,
+            type: data.type || 'Khác',
+            space: data.space || 'Khu A',
             department: 'Phòng trưng bày', // Default value
             description: data.description || '',
             history: data.description || '', // Dùng description cho history nếu không có
@@ -79,6 +95,25 @@ export default function ArtifactDetailPage() {
 
     fetchArtifact()
   }, [artifactId])
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        if (artifact && artifact.images && artifact.images[0]) {
+          const src = await loadImageWithAuth(artifact.images[0], token || undefined)
+          if (mounted) setImageSrc(src)
+        } else {
+          if (mounted) setImageSrc('')
+        }
+      } catch (err) {
+        if (mounted) setImageSrc(artifact && artifact.images && artifact.images[0] ? artifact.images[0] : '')
+      }
+    }
+
+    load()
+    return () => { mounted = false }
+  }, [artifact, token])
 
   if (loading) {
     return (
@@ -114,108 +149,272 @@ export default function ArtifactDetailPage() {
 
   const qrValue = `${typeof window !== 'undefined' ? window.location.origin : ''}/artifact/${artifactId}`
 
+  // Download QR Code
+  const handleDownloadQR = () => {
+    const svgElement = document.getElementById('qr-code-svg')?.querySelector('svg')
+    if (!svgElement) return
+
+    const svgData = new XMLSerializer().serializeToString(svgElement)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = document.createElement('img')
+
+    img.onload = () => {
+      canvas.width = img.width || 256
+      canvas.height = img.height || 256
+      if (ctx) {
+        ctx.drawImage(img, 0, 0)
+        const pngFile = canvas.toDataURL('image/png')
+        const downloadLink = document.createElement('a')
+        downloadLink.download = `QR-${artifact.name.replace(/\s+/g, '-')}.png`
+        downloadLink.href = pngFile
+        downloadLink.click()
+      }
+    }
+
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+    img.src = url
+  }
+
+  // Print artifact info
+  const handlePrint = () => {
+    window.print()
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-stone-50 via-stone-100/30 to-stone-50">
+      <style jsx>{`
+        /* Museum spotlight effect */
+        .museum-spotlight {
+          position: relative;
+        }
+        .museum-spotlight::before {
+          content: '';
+          position: absolute;
+          top: -20%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 120%;
+          height: 60%;
+          background: radial-gradient(ellipse at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 40%, transparent 70%);
+          pointer-events: none;
+          z-index: 1;
+        }
+        
+        /* Museum wall texture */
+        .museum-wall {
+          background: 
+            linear-gradient(135deg, rgba(0,0,0,0.02) 0%, transparent 50%),
+            linear-gradient(45deg, rgba(0,0,0,0.01) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.01) 75%),
+            linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 50%, #f5f5f4 100%);
+          background-size: 100% 100%, 20px 20px, 100% 100%;
+        }
+        
+        /* Vignette effect */
+        .museum-vignette {
+          box-shadow: 
+            inset 0 0 150px rgba(0,0,0,0.1),
+            inset 0 0 80px rgba(0,0,0,0.05);
+        }
+        
+        /* Pedestal shadow */
+        .pedestal-shadow {
+          box-shadow: 
+            0 20px 60px rgba(0,0,0,0.15),
+            0 10px 30px rgba(0,0,0,0.1),
+            0 0 0 1px rgba(0,0,0,0.05);
+        }
+        
+        /* Timeline marker */
+        .timeline-marker {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .timeline-marker::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 2px;
+          height: 100%;
+          background: #3b82f6;
+        }
+        
+        /* Museum plaque frame */
+        .museum-plaque {
+          border: 2px solid #d4af37;
+          border-radius: 4px;
+          background: linear-gradient(to bottom, #fefce8, #fef9c3);
+          box-shadow: 
+            inset 0 1px 0 rgba(255,255,255,0.5),
+            inset 0 -1px 0 rgba(0,0,0,0.1),
+            0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Glass panel effect */
+        .glass-panel {
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.3);
+          box-shadow: 
+            0 8px 32px rgba(0,0,0,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+      `}</style>
       <Header />
 
-      <div className="container mx-auto px-4 py-8 flex-1">
-        <Link
-          href="/artifact"
-          className="inline-flex items-center text-primary-dark hover:text-primary-dark mb-6"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Quay lại danh sách
-        </Link>
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 py-12 flex-1">
+        <div className="grid lg:grid-cols-[65%_35%] gap-12 lg:gap-16">
+          {/* Left Side - Museum Exhibit Area */}
+          <div className="space-y-8">
+            {/* Breadcrumb - Subtle navigation */}
+            <div>
+              <nav className="flex items-center text-xs text-stone-500 tracking-wider uppercase">
+                <Link href="/artifact" className="hover:text-stone-700 transition-colors">
+                  DANH SÁCH
+                </Link>
+                <span className="mx-2">/</span>
+                <span className="text-stone-700 font-medium">{artifact.name.toUpperCase()}</span>
+              </nav>
+            </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Ảnh chính */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-xl p-6 border-4 border-primary-dark">
-              <div className="relative aspect-[4/3] bg-gradient-to-br from-white via-blue-50 to-primary-dark rounded-lg overflow-hidden mb-4 flex items-center justify-center">
-                <span className="text-8xl">📦</span>
+            {/* Museum Exhibit - Pedestal with Artifact */}
+            <div className="relative flex flex-col items-center">
+              {/* Museum Wall Background */}
+              <div className="museum-wall museum-vignette w-full max-w-[800px] rounded-3xl p-16 relative">
+                {/* Spotlight Effect */}
+                <div className="museum-spotlight absolute inset-0 rounded-3xl overflow-hidden">
+                  {/* Artifact on Pedestal */}
+                  <div className="relative z-10 flex flex-col items-center">
+                    {/* Pedestal Base */}
+                    <div className="w-full max-w-[700px] h-5 bg-gradient-to-b from-stone-300 to-stone-400 rounded-t-lg pedestal-shadow mb-3"></div>
+                    
+                    {/* Artifact Image */}
+                    <div className="relative w-full max-w-[700px] aspect-[4/3] rounded-lg overflow-hidden bg-white shadow-2xl">
+                      {artifact.images && artifact.images.length > 0 && artifact.images[0] ? (
+                        <img
+                          src={imageSrc || artifact.images[0]}
+                          alt={artifact.name}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-stone-100 to-stone-200">
+                          <span className="text-8xl opacity-30">📦</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Pedestal Base Bottom */}
+                    <div className="w-full max-w-[700px] h-4 bg-gradient-to-b from-stone-400 to-stone-500 rounded-b-lg pedestal-shadow mt-3"></div>
+                  </div>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-600 italic">
-                  Hiện vật được trưng bày tại {artifact.space}
+              
+              {/* Museum Caption */}
+              <div className="mt-6 w-full max-w-[800px] text-center">
+                <p className="text-sm text-stone-600 italic tracking-wide">
+                  Hiện vật trưng bày tại {artifact.space}
                 </p>
               </div>
             </div>
-
-            {/* Ảnh phụ */}
-            {artifact.images && artifact.images.length > 1 && (
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {artifact.images.slice(1).map((img: string, idx: number) => (
-                  <div
-                    key={idx}
-                    className="aspect-square bg-blue-50 rounded-lg overflow-hidden flex items-center justify-center"
-                  >
-                    <span className="text-3xl">📷</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
-          {/* Thông tin bên phải */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-primary-dark mb-4">
+          {/* Right Side - Museum Information Board */}
+          <div className="bg-stone-50 rounded-2xl shadow-xl p-8 space-y-8 border border-stone-200">
+            {/* Title with Timeline Marker */}
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-900 leading-tight tracking-tight">
                 {artifact.name}
               </h1>
               
-              <div className="space-y-3 mb-6">
-                <div className="flex items-start">
-                  <Calendar className="w-5 h-5 mr-3 text-primary-dark mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-primary-dark">Năm sử dụng</p>
-                    <p className="text-gray-700">{artifact.year}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <MapPin className="w-5 h-5 mr-3 text-primary-dark mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-primary-dark">Khoa phòng / Bối cảnh</p>
-                    <p className="text-gray-700">{artifact.department}</p>
-                    <p className="text-sm text-gray-600 mt-1">{artifact.context}</p>
-                  </div>
+              {/* Timeline Marker for Year */}
+              <div className="timeline-marker pl-8 relative">
+                <div className="flex items-center relative z-10">
+                  <span className="text-2xl font-serif text-blue-600 font-bold">
+                    {artifact.year}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-bold text-primary-dark mb-4">
-                Mô tả lịch sử
-              </h2>
-              <p className="text-gray-700 mb-4 leading-relaxed">
-                {artifact.description}
-              </p>
-              
+            {/* Metadata Grid - Museum Style */}
+            <div className="grid grid-cols-2 gap-6 pb-6 border-b border-stone-200">
+              <div className="space-y-2">
+                <p className="text-[10px] text-stone-500 uppercase tracking-widest font-medium">Năm hình thành</p>
+                <p className="text-base font-sans font-medium text-stone-900 border-b border-stone-300 pb-2">{artifact.year}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] text-stone-500 uppercase tracking-widest font-medium">Phân loại</p>
+                <p className="text-base font-sans font-medium text-stone-900 border-b border-stone-300 pb-2">{artifact.type}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] text-stone-500 uppercase tracking-widest font-medium">Không gian</p>
+                <p className="text-base font-sans font-medium text-stone-900 border-b border-stone-300 pb-2">{artifact.space}</p>
+              </div>
             </div>
 
-            {/* QR Code */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-primary-dark">
-              <div className="flex items-center mb-4">
-                <QrCode className="w-6 h-6 mr-2 text-primary-dark" />
-                <h3 className="text-lg font-bold text-primary-dark">
-                  QR Code hiện vật
+            {/* Description - Museum Plaque */}
+            {artifact.description && (
+              <div className="museum-plaque p-6 space-y-3">
+                <h3 className="text-xs font-serif text-stone-700 uppercase tracking-wider font-semibold">
+                  Mô tả lịch sử
                 </h3>
+                <p className="text-sm font-sans text-stone-800 leading-relaxed">
+                  {artifact.description}
+                </p>
               </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Quét mã QR để xem thông tin hiện vật này trên điện thoại
-              </p>
-              <div className="bg-white p-4 rounded-lg flex justify-center border-2 border-gray-200">
-                <QRCode
-                  value={qrValue}
-                  size={200}
-                  style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
-                  viewBox="0 0 256 256"
-                />
+            )}
+
+            {/* QR Code - Museum Guide Station */}
+            <div className="glass-panel rounded-xl p-6 space-y-4">
+              <div className="text-center space-y-3">
+                <h3 className="text-xs font-serif text-stone-600 uppercase tracking-wider">
+                  Hướng dẫn số
+                </h3>
+                <div id="qr-code-svg" className="flex justify-center">
+                  <div className="bg-white p-3 rounded-lg shadow-inner">
+                    <QRCode
+                      value={qrValue}
+                      size={180}
+                      style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
+                      viewBox="0 0 256 256"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-stone-600 font-sans">
+                  Quét để mở trên điện thoại
+                </p>
               </div>
-              <p className="text-xs text-gray-500 text-center mt-4">
-                Dùng để đặt tại phòng trưng bày thật
-              </p>
+
+              {/* Museum Action Buttons */}
+              <div className="space-y-2 pt-2">
+                <button
+                  onClick={handleDownloadQR}
+                  className="w-full bg-stone-800 hover:bg-stone-900 text-white font-sans text-sm font-medium py-3 px-4 rounded-md shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 tracking-wide"
+                >
+                  <Download className="w-4 h-4" />
+                  Tải xuống mã QR
+                </button>
+                <button
+                  onClick={handlePrint}
+                  className="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-sans text-sm font-medium py-3 px-4 rounded-md border border-stone-300 shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 tracking-wide"
+                >
+                  <Printer className="w-4 h-4" />
+                  In thông tin
+                </button>
+              </div>
             </div>
+
+            {/* Back Link - Subtle */}
+            <Link
+              href="/artifact"
+              className="inline-flex items-center text-stone-500 hover:text-stone-700 transition-colors text-xs font-sans uppercase tracking-wider"
+            >
+              <ArrowLeft className="w-3 h-3 mr-2" />
+              Quay lại danh sách
+            </Link>
           </div>
         </div>
       </div>

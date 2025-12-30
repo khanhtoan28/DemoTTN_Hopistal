@@ -1,9 +1,10 @@
-'use client'
+ 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import Book from '@/components/Book'
+const Book = dynamic(() => import('@/components/Book'), { ssr: false })
 import { Download, X, BookOpen } from 'lucide-react'
 import { goldenBookService } from '@/lib/api/services'
 import { GoldenBook } from '@/lib/api/types'
@@ -57,6 +58,8 @@ export default function SoVangPage() {
 
     fetchCertificates()
   }, [])
+
+  // selectedCert image loading with auth is handled inside client components (Book/ProtectedImage)
 
   // Xử lý phím ESC để đóng modal
   useEffect(() => {
@@ -119,7 +122,7 @@ export default function SoVangPage() {
 
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-dark mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-black mb-4">
             Sổ vàng – Bằng khen
           </h1>
           <p className="text-lg text-gray-700">
@@ -206,10 +209,10 @@ export default function SoVangPage() {
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="aspect-[3/4] bg-white rounded-lg overflow-hidden shadow-lg">
-                    <img
+                    <ProtectedImage
                       src={selectedCert.image}
                       alt={selectedCert.name}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full"
                     />
                   </div>
                 </div>
